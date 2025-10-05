@@ -15,6 +15,7 @@ import os
 from enum import Enum
 import lib.constants as constants
 import json
+import torch
 
 
 # Init paths from config
@@ -30,9 +31,11 @@ QUILTING_ROOT = path_config["QUILTING_ROOT"]
 MODELS_ROOT = path_config["MODELS_ROOT"]
 if not path_config["IMAGENET_DIR1"]:
     IMAGENET_DIR1 = os.path.join(os.path.dirname(__file__), "../test/images")
-    print("\nWARNING: IMAGENET_DIR1 is not defined in path_config.json, "
-            "so loading test images from {}".format(IMAGENET_DIR1))
-    print("To load imagenet data update path IMAGENET_DIR1 in path_config.json\n")
+    if os.environ.get("ADVERSARIAL_IMAGENET_WARNED") != "1":
+        print("\nWARNING: IMAGENET_DIR1 is not defined in path_config.json, "
+              "so loading test images from {}".format(IMAGENET_DIR1))
+        print("To load imagenet data update path IMAGENET_DIR1 in path_config.json\n")
+        os.environ["ADVERSARIAL_IMAGENET_WARNED"] = "1"
 else:
     IMAGENET_DIR1 = path_config["IMAGENET_DIR1"]
 if not path_config["IMAGENET_DIR2"]:
@@ -295,8 +298,8 @@ def _parse_quilting_patch_opts():
     # set input arguments:
     parser = argparse.ArgumentParser(description='Build FAISS index of patches')
     parser = _setup_common_args(parser)
-    parser.add_argument('--num_patches', default=1000000, type=int, metavar='N',
-                        help='number of patches in index (default: 1M)')
+    parser.add_argument('--num_patches', default=10000, type=int, metavar='N',
+                        help='number of patches in index (default: 10K)')
     parser.add_argument('--pca_dims', default=64, type=int, metavar='N',
                         help='number of pca dimensions to use (default: 64)')
     parser.add_argument('--patches_file', default='/tmp/tmp.pickle', type=str,
@@ -348,6 +351,10 @@ def parse_args(opt_type):
         "ERROR: Can't find imagenet data at paths: {}. \n "
         "Update the IMAGENET_DIR1 in path_config.json with the correct path"
         .format(imagenet_dirs))
+
+    if getattr(args, 'device', None) == 'gpu' and not torch.cuda.is_available():
+        print("| WARNING: CUDA is not available; falling back to CPU")
+        args.device = 'cpu'
 
     print("| Input args are:")
     print(args)

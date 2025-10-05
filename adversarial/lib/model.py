@@ -12,6 +12,7 @@ from __future__ import unicode_literals
 
 import os
 import pkgutil
+import torch
 import torch.nn as nn
 import torch.nn.parallel
 import torchvision.models as models
@@ -29,10 +30,14 @@ def _load_torchvision_model(model, pretrained=True):
 
 def _init_data_parallel(model, device):
     if device == 'gpu':
+        if not torch.cuda.is_available():
+            print('| WARNING: CUDA is not available; using CPU instead')
+            return model
         import torch.backends.cudnn as cudnn
         cudnn.benchmark = True
         model = torch.nn.DataParallel(model).cuda()
         return model
+    return model
 
 
 def _init_inceptionresnetv2(model, device):

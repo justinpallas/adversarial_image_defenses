@@ -11,15 +11,29 @@ import random
 import numpy
 import os
 
-import pkgutil
-if pkgutil.find_loader("adversarial") is not None:
-    # If adversarial module is created by pip install
-    QUILTING_LIB = ctypes.cdll.LoadLibrary(os.path.join(os.path.dirname(__file__), "libquilting.so"))
-else:
+import glob
+
+
+def _load_quilting_lib():
+    lib_dir = os.path.dirname(__file__)
+    patterns = [
+        "libquilting*.so",
+        "libquilting*.dylib",
+        "libquilting*.dll",
+    ]
+
+    for pattern in patterns:
+        matches = glob.glob(os.path.join(lib_dir, pattern))
+        if matches:
+            return ctypes.cdll.LoadLibrary(matches[0])
+
     try:
-        QUILTING_LIB = ctypes.cdll.LoadLibrary('libquilting.so')
-    except ImportError:
-        raise ImportError("libquilting.so not found. Check build script")
+        return ctypes.cdll.LoadLibrary('libquilting.so')
+    except OSError as exc:
+        raise ImportError("libquilting shared library not found. Check build script") from exc
+
+
+QUILTING_LIB = _load_quilting_lib()
 
 
 def generate_patches(img, patch_size, overlap):

@@ -10,6 +10,13 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
+import platform
+
+if platform.system() == 'Darwin':
+    os.environ.setdefault('KMP_DUPLICATE_LIB_OK', 'TRUE')
+os.environ.setdefault('OMP_NUM_THREADS', '1')
+
 try:
     import cPickle as pickle
 except ImportError:
@@ -19,6 +26,13 @@ import random
 
 import torch
 import faiss
+
+if hasattr(faiss, 'omp_set_num_threads'):
+    try:
+        num_threads = int(os.environ.get('FAISS_NUM_THREADS', '1'))
+    except ValueError:
+        num_threads = 1
+    faiss.omp_set_num_threads(max(1, num_threads))
 
 from lib.dataset import load_dataset, get_data_loader
 import lib.opts as opts

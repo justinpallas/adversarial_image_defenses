@@ -10,6 +10,17 @@ import lib.transformations.transforms as transforms
 from lib.datasets.transform_dataset import TransformDataset
 
 
+try:
+    _ResizeTransform = torch_trans.Resize
+except AttributeError:  # torchvision < 0.8
+    _ResizeTransform = torch_trans.Scale
+
+try:
+    _RandomResizedCrop = torch_trans.RandomResizedCrop
+except AttributeError:  # torchvision < 0.8
+    _RandomResizedCrop = torch_trans.RandomSizedCrop
+
+
 # Initialize transformations to be applied to dataset
 def setup_transformations(args, data_type, defense, crop=None):
     if 'preprocessed_data' in args and args.preprocessed_data:
@@ -25,10 +36,10 @@ def setup_transformations(args, data_type, defense, crop=None):
         if (data_type == 'train'):
             if 'preprocessed_data' in args and args.preprocessed_data:
                 # Defenses are already applied on randomly cropped images
-                transform.append(torch_trans.Scale(args.data_params['IMAGE_SIZE']))
+                transform.append(_ResizeTransform(args.data_params['IMAGE_SIZE']))
             else:
                 transform.append(
-                    torch_trans.RandomSizedCrop(args.data_params['IMAGE_SIZE']))
+                    _RandomResizedCrop(args.data_params['IMAGE_SIZE']))
 
             transform.append(torch_trans.RandomHorizontalFlip())
             transform.append(torch_trans.ToTensor())
@@ -36,7 +47,7 @@ def setup_transformations(args, data_type, defense, crop=None):
         else:  # validation
             # No augmentation for validation
             if 'preprocessed_data' not in args or not args.preprocessed_data:
-                transform.append(torch_trans.Scale(args.data_params['IMAGE_SCALE_SIZE']))
+                transform.append(_ResizeTransform(args.data_params['IMAGE_SCALE_SIZE']))
                 transform.append(torch_trans.CenterCrop(
                     args.data_params['IMAGE_SIZE']))
             transform.append(torch_trans.ToTensor())

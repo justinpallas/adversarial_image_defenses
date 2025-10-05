@@ -17,6 +17,13 @@ import torch.nn as nn
 from lib.util import accuracy
 
 
+def _model_on_gpu(model):
+    params = list(model.parameters())
+    if not params:
+        return False
+    return params[0].is_cuda
+
+
 # function that trains a model:
 def train(model, criterion, optimizer, data_loader_hook=None,
                  start_epoch_hook=None, end_epoch_hook=None,
@@ -37,7 +44,7 @@ def train(model, criterion, optimizer, data_loader_hook=None,
     assert callable(data_loader_hook)
 
     # are we on CPU or GPU?
-    is_gpu = not isinstance(model, torch.nn.backends.thnn.THNNFunctionBackend)
+    is_gpu = _model_on_gpu(model)
 
     # train the model:
     model.train()
@@ -58,12 +65,12 @@ def train(model, criterion, optimizer, data_loader_hook=None,
         for num_batches, (imgs, targets) in enumerate(data_loader):
 
             # copy data to GPU:
+            cpu_targets = targets.clone()
             if is_gpu:
-                cpu_targets = targets.clone()
-                targets = targets.cuda(async=True)
+                targets = targets.cuda(non_blocking=True)
                 # Make sure the imgs are converted to cuda tensor too
-                imgs = imgs.cuda(async=True)
-                
+                imgs = imgs.cuda(non_blocking=True)
+
             imgsvar = torch.autograd.Variable(imgs)
             tgtsvar = torch.autograd.Variable(targets)
 
@@ -101,7 +108,7 @@ def _test(model, data_loader, return_probability=False):
     assert isinstance(data_loader, torch.utils.data.dataloader.DataLoader)
 
     # are we on CPU or GPU?
-    is_gpu = not isinstance(model, torch.nn.backends.thnn.THNNFunctionBackend)
+    is_gpu = _model_on_gpu(model)
         
     # loop over data:
     model.eval()
@@ -112,11 +119,11 @@ def _test(model, data_loader, return_probability=False):
     for num_batches, (imgs, targets) in enumerate(data_loader):
 
             # copy data to GPU:
+        cpu_targets = targets.clone()
         if is_gpu:
-            cpu_targets = targets.clone()
-            targets = targets.cuda(async=True)
+            targets = targets.cuda(non_blocking=True)
             # Make sure the imgs are converted to cuda tensor too
-            imgs = imgs.cuda(async=True)
+            imgs = imgs.cuda(non_blocking=True)
 
         # perform prediction:
         imgsvar = torch.autograd.Variable(imgs.squeeze(), volatile=True)
