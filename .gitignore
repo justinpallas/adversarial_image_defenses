@@ -1,2 +1,31 @@
-adversarial
-adversarial.egg-info
+# Python bytecode / caches
+__pycache__/
+*.py[cod]
+*.so
+
+# Build / packaging artifacts
+build/
+dist/
+.eggs/
+*.egg-info
+
+# Virtual environments
+.venv/
+venv/
+env/
+*.env
+
+# Test & tooling caches
+.pytest_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+
+# macOS / editor noise
+.DS_Store
+.idea/
+.vscode/
+
+# Demo outputs (if you ever point paths back into the repo)
+partitioned/
+adversarial/
