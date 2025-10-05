@@ -1,31 +1,39 @@
-# Python bytecode / caches
 __pycache__/
 *.py[cod]
 *.so
 
-# Build / packaging artifacts
 build/
 dist/
 .eggs/
-*.egg-info
+*.egg-info/
 
-# Virtual environments
 .venv/
 venv/
 env/
 *.env
 
-# Test & tooling caches
 .pytest_cache/
 .mypy_cache/
-.coverage
+.coverage*
 coverage.xml
 
-# macOS / editor noise
+# Auto-downloaded model weights/code
+adversarial/lib/models/inceptionv4.py
+adversarial/lib/models/inceptionresnetv2.py
+
+# Auto-downloaded transformation sources
+adversarial/lib/transformations/CHANGES.TXT
+adversarial/lib/transformations/README.TXT
+adversarial/lib/transformations/_denoise_cy.pyx
+adversarial/lib/transformations/block.h
+adversarial/lib/transformations/graph.cpp
+adversarial/lib/transformations/graph.h
+adversarial/lib/transformations/instances.inc
+adversarial/lib/transformations/maxflow.cpp
+adversarial/lib/transformations/maxflow.zip
+adversarial/lib/transformations/tv_bregman.c
+adversarial/lib/transformations/tv_bregman.pyx
+
 .DS_Store
 .idea/
 .vscode/
-
-# Demo outputs (if you ever point paths back into the repo)
-partitioned/
-adversarial/
